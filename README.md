@@ -51,6 +51,19 @@ node tools/mobile-check.mjs   # 移动端布局
 node tools/shot.mjs           # 截图（output/*.png）
 ```
 
+## 怎么更新线上版本
+
+这台机器连不上 github.com:443（`git push` 会超时），但 api.github.com 是通的，
+所以用 Contents API 发布：改完代码跑
+
+```bash
+node tools/build.mjs      # 重新合成 index.html
+node tools/publish.mjs    # 推到 liaoli-hero/idiom-orchard（自动建/更新文件）
+node tools/live-check.mjs # 对线上地址跑一遍页面内自测
+```
+
+（如果你的网络能直连 github.com，也可以正常 `git push origin main`。）
+
 ## 词库来源
 
 成语与拼音来自 npm 包 `cnchar` / `cnchar-idiom` / `cnchar-poly`（Apache-2.0），
