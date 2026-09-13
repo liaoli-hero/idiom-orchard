@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>移动端布局校验</title>
+<style>
+  body { margin: 0; background: #222; font: 13px/1.5 monospace; color: #eee; }
+  iframe { border: 0; display: block; background: #fff; }
+  #wrap { display: flex; gap: 8px; flex-wrap: wrap; }
+</style>
+</head>
+<body>
+<div id="wrap"></div>
+<pre id="mobile-report">pending</pre>
+<script>
+var SIZES = [[360, 780], [390, 844], [430, 932], [492, 844]];
+var wrap = document.getElementById('wrap');
+var out = [];
+
+function measure(size) {
+  return new Promise(function (resolve) {
+    var f = document.createElement('iframe');
+    f.width = size[0];
+    f.height = size[1];
+    f.src = '../index.html?metrics=1&demo=6';
+    wrap.appendChild(f);
+    f.onload = function () {
+      setTimeout(function () {
+        try {
+          var doc = f.contentDocument;
+          var pre = doc.getElementById('metrics');
+          var data = pre ? JSON.parse(pre.textContent) : null;
+          var win = f.contentWindow;
+          var overflowEls = 0;
+          var offenders = [];
+          Array.prototype.forEach.call(doc.querySelectorAll('body *'), function (n) {
+            var r = n.getBoundingClientRect();
+            if (r.width === 0 || n.closest('.fx')) return;
+            if (r.right > win.innerWidth + 1) {
+              overflowEls++;
+              if (offenders.length < 4) {
+                var cls = typeof n.className === 'string' ? n.className.split(' ').slice(0, 2).join('.') : '';
+                offenders.push(n.tagName.toLowerCase() + (n.id ? '#' + n.id : '') + (cls ? '.' + cls : '') +
+                  ' right=' + Math.round(r.right));
+              }
+            }
+          });
+          var st = doc.getElementById('basket');
+          var tags = st ? st.querySelectorAll('.tag') : [];
+          // 真正会不会被横向滑走？
+          win.scrollTo(400, 0);
+          var canScrollX = win.scrollX > 0;
+          win.scrollTo(0, 0);
+          var containers = ['topbar', 'stage', 'basket', 'juice', 'sign', 'banner', 'console?', 'app'].map(function (id) {
+            var node = doc.getElementById(id.replace('?', ''));
+            if (!node) return null;
+            var r = node.getBoundingClientRect();
+            return { id: id, right: Math.round(r.right), w: Math.round(r.width) };
+          }).filter(Boolean);
+          var signWord = doc.getElementById('curWord');
+          var signRect = signWord ? signWord.getBoundingClientRect() : null;
+          var signBoard = signWord ? signWord.closest('.sign-board').getBoundingClientRect() : null;
+          resolve({
+            size: size.join('x'),
+            inner: win.innerWidth + 'x' + win.innerHeight,
+            scrollW: doc.documentElement.scrollWidth,
+            horizontalOverflow: doc.documentElement.scrollWidth > win.innerWidth + 1,
+            canScrollX: canScrollX,
+            containers: containers,
+            overflowEls: overflowEls,
+            offenders: offenders,
+            tagCount: tags.length,
+            tagFirstRect: tags.length ? Math.round(tags[0].getBoundingClientRect().width) + 'x' +
+              Math.round(tags[0].getBoundingClientRect().height) : '-',
+            signTextWidth: signRect ? Math.round(signRect.width) + '/' + Math.round(signBoard.width) : '-',
+            signClipped: signRect && signBoard ? signRect.width > signBoard.width + 1 : false,
+            metrics: data ? { clientW: data.clientW, innerW: data.innerW } : null,
+          });
+        } catch (e) {
+          resolve({ size: size.join('x'), error: String(e && e.message || e) });
+        }
+      }, 1200);
+    };
+  });
+}
+
+(async function () {
+  for (var i = 0; i < SIZES.length; i++) out.push(await measure(SIZES[i]));
+  document.getElementById('mobile-report').textContent = JSON.stringify(out);
+})();
+</script>
+</body>
+</html>
