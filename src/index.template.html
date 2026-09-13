@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>成语果园 · 水果版成语接龙</title>
+<meta name="theme-color" content="#f4e6c9">
+<meta name="description" content="接对一个成语，藤上就结一颗果子。点开就能玩，不用下载、不用登录，手机电脑都行。">
+<meta name="format-detection" content="telephone=no,email=no,address=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="成语果园">
+<meta property="og:type" content="website">
+<meta property="og:title" content="成语果园 · 水果版成语接龙">
+<meta property="og:description" content="接对一个成语，藤上就结一颗果子。点开就能玩。">
+<meta property="og:image" content="https://liaoli-hero.github.io/idiom-orchard/icon.png">
+<meta property="og:url" content="https://liaoli-hero.github.io/idiom-orchard/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M50 30c-8-11-31-13-38 4-8 20 6 44 20 50 6 3 11-2 18-2s12 5 18 2c14-6 28-30 20-50-7-17-30-15-38-4z' fill='%23e4543a'/%3E%3Cpath d='M50 26c1-9 7-15 17-16-1 10-7 16-17 16z' fill='%235c9c3f'/%3E%3Cpath d='M50 30c0-6 1-9 3-13' stroke='%237d4a20' stroke-width='3.4' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="./icon.png">
+<style>
+{{CSS}}
+</style>
+</head>
+<body class="season-spring" data-mode="endless">
+{{SPRITE}}
+<div class="app" id="app">
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark" id="brandMark"></span>
+      <span class="brand-text"><b>成语果园</b><i>FRUIT IDIOM</i></span>
+    </div>
+    <div class="modes" id="modes" role="tablist" aria-label="游戏模式">
+      <button class="mode" data-mode="endless" role="tab" aria-selected="true">无尽果园</button>
+      <button class="mode" data-mode="timed" role="tab" aria-selected="false">六十秒</button>
+      <button class="mode" data-mode="daily" role="tab" aria-selected="false">每日一果</button>
+    </div>
+    <div class="tools">
+      <button class="tool" id="btnBook">图鉴<span class="badge" id="bookCount">0</span></button>
+      <button class="tool" id="btnSound" aria-pressed="true">音效</button>
+      <button class="tool" id="btnHelp">玩法</button>
+    </div>
+  </header>
+
+  <main class="board">
+    <aside class="rail rail-l">
+      <div class="panel stat-panel">
+        <div class="stat"><span>分数</span><b id="score">0</b></div>
+        <div class="stat combo-wrap" id="comboWrap"><span>连击</span><b id="combo">0</b></div>
+        <div class="stat-line"><span>最高分 <i id="best">0</i></span><span>最长链 <i id="bestChain">0</i></span></div>
+      </div>
+      <div class="panel chain-panel">
+        <h3>本局链条</h3>
+        <ol class="chain" id="chainList"></ol>
+      </div>
+    </aside>
+
+    <section class="stage" id="stage" aria-label="果园画面">
+      <div class="scenery" id="scenery"></div>
+      <canvas class="fx" id="fx"></canvas>
+      <div class="floaties" id="floaties"></div>
+      <div class="sign" id="sign">
+        <div class="sign-board">
+          <div class="sign-word" id="curWord">成语果园</div>
+          <div class="sign-note" id="signNote">点下面的果子，把接龙接下去</div>
+        </div>
+        <div class="chain-char" id="chainChar"><span class="cc-char">果</span><span class="cc-py"></span></div>
+      </div>
+      <div class="hud">
+        <div class="juice" id="juice"><div class="juice-fill" id="juiceFill"></div><span class="juice-text" id="juiceText">果汁</span></div>
+      </div>
+      <div class="toast" id="toast" role="status" aria-live="polite"></div>
+      <div class="banner" id="banner"></div>
+    </section>
+
+    <aside class="rail rail-r">
+      <div class="panel items-panel">
+        <h3>水果道具</h3>
+        <div class="items" id="items"></div>
+      </div>
+      <div class="panel mini-panel">
+        <div class="mini-row"><span>本局用词</span><b id="miniWords">0</b></div>
+        <div class="mini-row"><span>水果专场</span><b id="miniRounds">0</b></div>
+        <div class="mini-row"><span>打字次数</span><b id="miniTyped">0</b></div>
+        <button class="btn-ghost" id="btnRestart">重开一局</button>
+      </div>
+    </aside>
+  </main>
+
+  <footer class="console">
+    <form class="typerow" id="typeForm" autocomplete="off">
+      <input id="typeInput" type="text" inputmode="text" autocomplete="off" autocapitalize="off"
+             spellcheck="false" placeholder="也可以直接打出成语（+50% 分）" aria-label="打字输入成语">
+      <button type="submit" class="btn-go" id="btnGo">接上</button>
+      <div class="suggest" id="suggest" hidden></div>
+    </form>
+    <div class="fruitbar" id="fruitBar" hidden></div>
+    <div class="basket" id="basket" aria-label="候选成语果篮"></div>
+  </footer>
+</div>
+
+<div class="overlay" id="overlay" hidden>
+  <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="面板"></div>
+</div>
+
+<script>
+{{DATA}}
+</script>
+<script>
+{{ENGINE}}
+</script>
+<script>
+{{ART}}
+</script>
+<script>
+{{AUDIO}}
+</script>
+<script>
+{{GAME}}
+</script>
+</body>
+</html>
